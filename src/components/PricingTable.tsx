@@ -6,8 +6,10 @@ import { styled } from '@mui/material/styles';
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
+import Stack from '@mui/material/Stack';
 import { mockData } from "../mock";
-import { TableDescriptors, Plan } from '../types'
+import { TableDescriptors, Plan} from '../types'
+import Paper from '@mui/material/Paper';
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -19,6 +21,13 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   },
 }));
 
+const Item = styled(Paper)(({ theme }) => ({
+  backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+  ...theme.typography.body2,
+  padding: theme.spacing(1),
+  textAlign: 'center',
+  color: theme.palette.text.secondary,
+}));
 
 const readableHeaders: TableDescriptors = {
   description: {
@@ -76,7 +85,7 @@ const readableHeaders: TableDescriptors = {
   }
 
 
-const tranformPlanData = (data: Plan) => {
+const tranformPlanData = (data: Plan): any[] => {
   const sections: string[] = Object.keys(data)
   const columnHeaders = []
   for (const item of sections) {
@@ -95,7 +104,7 @@ const tranformPlanData = (data: Plan) => {
   return columnHeaders
 }
 
-const  PricingTable = (props: any) => {
+const  PricingTable = () => {
   const renderValue = (value: string|number|boolean) => {
     return value ? typeof value === 'boolean' ? <>&#88;</> : value : <>&#45;</>
   }
@@ -104,31 +113,38 @@ const  PricingTable = (props: any) => {
       undefined,
       { numeric: true, sensitivity: 'base' }
   ));
-  const result:any = mockData.map(item => tranformPlanData(item)) 
+  const result =  mockData.map((item: Plan) => tranformPlanData(item))
   const shape = result[0]
   const tableHeaders = mockData.map(item => item?.name)
-  const output = []
-  for (let a = 0; a < shape.length; a++) {
-    if (typeof shape[a] === 'string') {
+  const row = []
+  for (let a = 0; a < shape?.length; a++) {
+    if (typeof shape?.[a] === 'string') {
       let temp = []
-     for (let i=0; i<mockData.length; i++ ) {
-        temp.push(<StyledTableCell style={{backgroundColor: '#eee', border: 0}}/>)
+      for (let i=0; i<mockData.length; i++ ) {
+        temp.push(<StyledTableCell className="side-header-sections"/>)
       }
-      output.push(
+      row.push(
         <TableRow style={{backgroundColor: '#eee' }}>
-          <StyledTableCell  component="th" scope="row" style={{backgroundColor: '#eee', border: 0, fontSize: '16px', fontWeight: 'bold'}}>{shape[a]}</StyledTableCell>
+          <StyledTableCell  component="th" scope="row" 
+          className="side-header-sections"
+          >
+            {shape[a]}
+          </StyledTableCell>
           {temp}
       </TableRow>
       )
     }
     if (Array.isArray(shape[a])) {
-      let temp = []
+      let temp = [] 
       for (let i=0; i<mockData.length; i++ ) {
-        temp.push(<StyledTableCell align="center">{renderValue(result[i][a][1])}</StyledTableCell>)
+        temp.push(<StyledTableCell align="center" key={i}>{renderValue(result[i][a][1])}</StyledTableCell>)
       }
-      output.push(
+      row.push(
         <TableRow>
-          <StyledTableCell component="th" scope="row" style={{backgroundColor: '#eee'}}>{shape[a][0] === 'Price'? `${shape[a][0]} (€)` : shape[a][0] }</StyledTableCell>
+          <StyledTableCell component="th" scope="row" 
+          style={{backgroundColor: '#eee'}}>
+            {shape[a][0] === 'Price'? `${shape[a][0]} (€)` : shape[a][0] }
+          </StyledTableCell>
           {temp}
         </TableRow>
       )
@@ -136,22 +152,26 @@ const  PricingTable = (props: any) => {
     }
   }
   return (
-  <div className="pricingTable">
-    <h3 className="title">Pricing Plans</h3>
-    <TableContainer >
+  <Stack spacing={1}>
+   <Item><h3 className="title">Pricing Plans</h3></Item>
+    <Item>
+
+    <TableContainer className="plans-table" >
       <Table aria-label="Plans table" >
         <TableHead>
-          <TableRow style={{backgroundColor: '#eee'}}>
+          <TableRow>
             <StyledTableCell>Tiers</StyledTableCell>
-            {tableHeaders.map(name => (<StyledTableCell align="center" >{name}</StyledTableCell>) )}
+            {tableHeaders.map(name => (<StyledTableCell align="center" key={name} >{name}</StyledTableCell>) )}
           </TableRow>
         </TableHead>
         <TableBody>
-        {output}
+        {row}
         </TableBody>
       </Table>
     </TableContainer>
-  </div>
+    </Item>
+    
+  </Stack>
   );
 }
 
